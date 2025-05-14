@@ -1,0 +1,118 @@
+
+-- Database Name: LibraryManagementSystem
+
+-- Drop the database if it exists to start fresh
+DROP DATABASE IF EXISTS LibraryManagementSystem;
+
+-- Create the database
+CREATE DATABASE LibraryManagementSystem;
+
+-- Use the database
+USE LibraryManagementSystem;
+
+
+-- Table: Authors
+-- Description: Stores information about the authors of books.
+
+CREATE TABLE Authors (
+    AuthorID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(100) NOT NULL,
+    LastName VARCHAR(100) NOT NULL,
+    Nationality VARCHAR(100),
+    Biography TEXT
+);
+
+
+-- Table: Publishers
+-- Description: Stores information about the publishers of books.
+
+CREATE TABLE Publishers (
+    PublisherID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(200) NOT NULL,
+    Address VARCHAR(255),
+    ContactNumber VARCHAR(20),
+    Email VARCHAR(100)
+);
+
+
+-- Table: Books
+-- Description: Stores information about the books in the library.
+
+CREATE TABLE Books (
+    BookID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(255) NOT NULL,
+    ISBN VARCHAR(20) UNIQUE NOT NULL,
+    PublicationYear INT,
+    PublisherID INT,
+    FOREIGN KEY (PublisherID) REFERENCES Publishers(PublisherID),
+    Genre VARCHAR(100),
+    Pages INT,
+    Language VARCHAR(50)
+);
+
+
+-- Table: BookAuthors (Many-to-Many Relationship between Books and Authors)
+-- Description:  Stores the relationship between books and their authors.
+
+CREATE TABLE BookAuthors (
+    BookID INT,
+    AuthorID INT,
+    PRIMARY KEY (BookID, AuthorID),
+    FOREIGN KEY (BookID) REFERENCES Books(BookID),
+    FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID)
+);
+
+-- Table: Members
+-- Description: Stores information about the library members.
+
+CREATE TABLE Members (
+    MemberID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(100) NOT NULL,
+    LastName VARCHAR(100) NOT NULL,
+    DateOfBirth DATE,
+    Gender VARCHAR(10),
+    Address VARCHAR(255),
+    ContactNumber VARCHAR(20) UNIQUE NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    MembershipDate DATE NOT NULL,
+    MembershipType ENUM('Student', 'Faculty', 'Staff', 'Public') NOT NULL
+);
+
+-- Table: Loans
+-- Description: Stores information about book loans to members.
+
+CREATE TABLE Loans (
+    LoanID INT AUTO_INCREMENT PRIMARY KEY,
+    MemberID INT,
+    BookID INT,
+    LoanDate DATE NOT NULL,
+    ReturnDate DATE,
+    DueDate DATE NOT NULL,
+    Status ENUM('Loaned', 'Returned', 'Overdue') NOT NULL,
+    FOREIGN KEY (MemberID) REFERENCES Members(MemberID),
+    FOREIGN KEY (BookID) REFERENCES Books(BookID)
+);
+
+-- Table: Reservations
+-- Description: Stores information about book reservations by members.
+
+CREATE TABLE Reservations (
+    ReservationID INT AUTO_INCREMENT PRIMARY KEY,
+    MemberID INT,
+    BookID INT,
+    ReservationDate DATE NOT NULL,
+    Status ENUM('Pending', 'Active', 'Cancelled', 'Completed') NOT NULL,
+    FOREIGN KEY (MemberID) REFERENCES Members(MemberID),
+    FOREIGN KEY (BookID) REFERENCES Books(BookID)
+);
+
+-- Table: Fines
+-- Description: Stores information about fines for overdue books.
+CREATE TABLE Fines (
+    FineID INT AUTO_INCREMENT PRIMARY KEY,
+    LoanID INT,
+    FineAmount DECIMAL(10, 2) NOT NULL,
+    PaymentDate DATE,
+    Status ENUM('Unpaid', 'Paid', 'Waived') NOT NULL,
+    FOREIGN KEY (LoanID) REFERENCES Loans(LoanID)
+);
